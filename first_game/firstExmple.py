@@ -1,9 +1,11 @@
 import pygame,sys
-
+import random
 clock = pygame.time.Clock()
 
 from pygame.locals import *
+pygame.mixer.pre_init(44100,-16,2,512)#нужно чтоб звуки не задерживались
 pygame.init()
+pygame.mixer.set_num_channels(64)
 pygame.display.set_caption('НЕТ НИКОКИХ НОРМАЛЬНЫХ ИДЕЙ, ИЗ ЗА ЭТОГО ПУСЬ БУДЕТ ТАК')
 WINDOW_SIZE = (1600,900 )
 screen = pygame.display.set_mode(WINDOW_SIZE)
@@ -66,14 +68,27 @@ animation_database['run'] = load_animation('player_animations/run',[7,7])
 animation_database['idle'] = load_animation('player_animations/idle',[7,40])# здесь я исправил, было [7,7,40]
 
 
+game_map = load_map('map')
+
+jump_sound = pygame.mixer.Sound('jump.wav')
+jump_sound_2 = pygame.mixer.Sound('jump_2.wav')
+grass_sounds = [pygame.mixer.Sound('grass_0.wav'),pygame.mixer.Sound('grass_1.wav')]
+jump_sound.set_volume(0.4)#звук валюм
+grass_sounds[0].set_volume(0.4)
+grass_sounds[1].set_volume(0.2)
+
+pygame.mixer.music.load('music_1.wav')
+pygame.mixer.music.play(-1)#парамитр отвичает за то сколько раз она бдует производиться после проигреша, если -1 то она будет идти бесконечно
+
 player_action = 'idle'
 player_frame = 0
 player_flip = False
 
+gras_sound_timer = 0
+
 player_rect = pygame.Rect(100,100,10,16)#размеры и расположения игрока
 
 
-game_map = load_map('map')
 
 
 
@@ -117,6 +132,10 @@ air_timer = 0
 
 while True:
     display.fill((146,244,255))
+
+    if gras_sound_timer > 0:
+        gras_sound_timer -= 1
+        
 
     #чтоб скролл следовал за игроком
 
@@ -182,6 +201,10 @@ while True:
     if collisions['bottom'] == True:
         air_timer = 0
         vertical_momentum = 0
+        if player_movement[0] != 0:
+            if gras_sound_timer == 0:
+                grass_sound_timer = 30
+                random.choice(grass_sounds).play()
     else:
         air_timer += 1
 
@@ -190,7 +213,7 @@ while True:
         player_frame = 0
     player_img_id = animation_database[player_action][player_frame]
     player_img = animation_frames[player_img_id]
-    player_img = pygame.transform.scale(player_img,(10,16))
+    player_img = pygame.transform.scale(player_img,(10,16))#визуальные размеры игрока
     player_img.set_colorkey((0,0,0))
     
     display.blit(pygame.transform.flip(player_img,player_flip,False),(player_rect.x-scroll[0],player_rect.y-scroll[1]))
@@ -200,12 +223,17 @@ while True:
             pygame.quit()
             sys.exit()
         if event.type == KEYDOWN:
+            if event.key == K_w:
+                pygame.mixer.music.fadeout(1000)#заглушить музыку
+            if event.key == K_s:
+                pygame.mixer.music.play(-1)#аново начать!
             if event.key == K_RIGHT:
                 moving_right = True
             if event.key == K_LEFT:
                 moving_left = True
             if event.key == K_UP:
                 if air_timer < 6:
+                    jump_sound.play()
                     vertical_momentum = -5
         if event.type == KEYUP:
             if event.key == K_RIGHT:

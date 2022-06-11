@@ -1,0 +1,16 @@
+если хочешь чтоб твое поля двигалась влево, то измини на вот это
+   for row in game_map:
+        x = 0
+        for tile in row:
+            if tile == '1':
+                display.blit(dirt_image, (x * TILE_SIZE+scroll[0], y * TILE_SIZE+scroll[1]))
+            if tile == '2':
+                display.blit(grass_image, (x * TILE_SIZE+scroll[0], y * TILE_SIZE+scroll[1]))
+            if tile == '3':
+                display.blit(stone_image, (x * TILE_SIZE+scroll[0], y * TILE_SIZE+11+scroll[1]))
+            if tile == '4':
+                display.blit(hlaf_grass_image, (x * TILE_SIZE+scroll[0], y * TILE_SIZE+scroll[1]))
+            if tile != '0':
+                tile_rects.append(pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE))
+            x += 1
+        y += 1
