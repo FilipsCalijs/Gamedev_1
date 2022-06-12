@@ -14,28 +14,50 @@ display = pygame.Surface((300,200))
 
 #загружает изображения игрока
 
+stone_image = pygame.image.load('stone.png')
 grass_image = pygame.image.load('grass.png')
 dirt_image = pygame.image.load('dirt.png')
-stone_image = pygame.image.load('stone.png')
-hlaf_grass_image = pygame.image.load('half.png')
-warrning_image = pygame.image.load('warrning.png')
+plant_image = pygame.image.load('plant.png').convert()
+plant_image.set_colorkey((255,255,255))
+
+tile_index = {1:grass_image,
+              2:dirt_image,
+              3:plant_image,
+              4:stone_image}
+
+
+
 TILE_SIZE = grass_image.get_width()
 
 #крутит плитку дальше(просто менят позицию плитки на x+1 или x-1  )
 true_scroll = [0,0]
 
-def load_map(path):
-    f = open(path + '.txt','r')
-    data = f.read()
-    f.close()
-    data = data.split('\n')
-    game_map = []
-    for row in data:
-        game_map.append(list(row))
-    return game_map
+
 
 global animation_frames
 animation_frames = {}
+
+CHUNK_SIZE = 8
+
+def generate_chunk(x,y):
+    chunk_data = []
+    for y_pos in range(CHUNK_SIZE):
+        for x_pos in range(CHUNK_SIZE):
+            target_x = x * CHUNK_SIZE + x_pos
+            target_y = y * CHUNK_SIZE + y_pos
+            tile_type = 0 # nothing
+            if target_y > 10:
+                tile_type = 2 # dirt
+            elif target_y == 10:
+                tile_type = 1 # grass
+            elif target_y == 9:
+                if random.randint(1,5) == 1:#вероятность появление
+                    tile_type = 3 # plant
+                if random.randint(1,10) == 2:#для камнья
+                    tile_type = 4
+            if tile_type != 0:
+                chunk_data.append([[target_x,target_y],tile_type])
+    return chunk_data
 
 
 def load_animation(path,frame_durations):
@@ -68,7 +90,7 @@ animation_database['run'] = load_animation('player_animations/run',[7,7])
 animation_database['idle'] = load_animation('player_animations/idle',[7,40])# здесь я исправил, было [7,7,40]
 
 
-game_map = load_map('map')
+game_map = {}
 
 jump_sound = pygame.mixer.Sound('jump.wav')
 jump_sound_2 = pygame.mixer.Sound('jump_2.wav')
@@ -153,29 +175,19 @@ while True:
         else:
             pygame.draw.rect(display,(9,91,85),obj_rect)
     tile_rects = []
-    y = 0
-    for row in game_map:
-        x = 0
-        for tile in row:
-            if tile == '1':
-                display.blit(dirt_image, (x * TILE_SIZE-int(scroll[0]), y * TILE_SIZE-int(scroll[1])))
-            if tile == '2':
-                display.blit(grass_image, (x * TILE_SIZE-int(scroll[0]), y * TILE_SIZE-int(scroll[1])))
-            if tile == '3':
-                display.blit(stone_image, (x * TILE_SIZE-int(scroll[0]), y * TILE_SIZE-11+int(scroll[1])))
-            if tile == '6':
-                display.blit(stone_image, (x * TILE_SIZE-int(scroll[0]), y * TILE_SIZE-int(scroll[1])))
-            if tile == '4':
-                display.blit(warrning_image, (x * TILE_SIZE-scroll[0], y * TILE_SIZE-int(scroll[1])))
-            if tile != '0':
-                tile_rects.append(pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE))
-            x += 1
-        y += 1
+    for y in range(3):#я так понял это генерация чанков
+         for x in range(4):
+            target_x = x - 1 + int(round(scroll[0]/(CHUNK_SIZE*16)))
+            target_y = y - 1 + int(round(scroll[1]/(CHUNK_SIZE*16)))
+            target_chunk = str(target_x) + ';' + str(target_y)
+            if target_chunk not in game_map:
+                game_map[target_chunk] = generate_chunk(target_x,target_y)
+            for tile in game_map[target_chunk]:
+                display.blit(tile_index[tile[1]],(tile[0][0]*16-scroll[0],tile[0][1]*16-scroll[1]))
 
-
-
-
-
+                if tile[1] in [1,2]:#вещи, которые игрок не может пройти(они являються collision - грязь, трова)
+                    tile_rects.append(pygame.Rect(tile[0][0]*16,tile[0][1]*16,16,16))
+                    
 
     player_movement = [0,0]#скорость игрока
     if moving_right == True:
