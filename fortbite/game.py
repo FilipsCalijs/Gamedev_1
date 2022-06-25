@@ -1,6 +1,7 @@
 #ОБЫЧНО КОНСТАНТЫ ПИШУТЬСЯ С БОЛЬШИМ РЕГИСТРОМ
 
-import pygame 
+import pygame
+import os
 
 pygame.init()
 
@@ -16,41 +17,56 @@ pygame.display.set_caption("Fortbite Season 0")
 clock = pygame.time.Clock()
 FPS = 60
 
+#игровые парамитры
+GRAVITY = 0.55
+
 moving_right = False
 moving_left = False
 
-BG = (144,201,120)
+#загрузка изоброжений
 
+
+
+BG = (144,201,120)
+RED = (255,0,0)
 
 def draw_bg():
     screen.fill(BG)
+    pygame.draw.line(screen, RED, (0, 300), (SCREEN_WIDTH, 300))
 
+   
 class Soldier(pygame.sprite.Sprite):
     def __init__(self,char_type,x,y,scale,speed):
         
         pygame.sprite.Sprite.__init__(self)
+        self.alive = True
         self.char_type = char_type
         self.speed = speed
+        self.jump = False
+        self.in_air = True
+        self.vel_y = 0
         self.direction = 1
         self.flip = False
         self.animation_list = []
         self.frame_index = 0
         self.update_time = pygame.time.get_ticks()
         self.action = 0
-        temp_list = []
-        for i in range(5):
-        #f озночает. что если я добавлю мигурные скобки то помещю туда переменную
-            img = pygame.image.load(rf"B:\promma\python\game\fortbite\img\{self.char_type}\Idle\{i}.png")
-            #масштабирыванние
-            img = pygame.transform.scale(img,(int(img.get_width() * scale),int(img.get_height()* scale)))
-            temp_list.append(img)
-        self.animation_list.append(temp_list)
-        temp_list = []
-        for i in range(6):
-            img = pygame.image.load(rf"B:\promma\python\game\fortbite\img\{self.char_type}\Run\{i}.png")
-            img = pygame.transform.scale(img,(int(img.get_width() * scale),int(img.get_height()* scale)))
-            temp_list.append(img)
-        self.animation_list.append(temp_list)
+
+
+        animation_types = ["Idle","Run","Jump"]
+        for animation in animation_types:
+            #сбросить список изоброжений
+            temp_list = []
+            #кол-во файлов в папке
+            num_of_frames = len(os.listdir(rf"B:\promma\python\game\fortbite\img\{self.char_type}\{animation}"))
+            for i in range(num_of_frames):
+            #f озночает. что если я добавлю мигурные скобки то помещю туда переменную
+                img = pygame.image.load(rf"B:\promma\python\game\fortbite\img\{self.char_type}\{animation}\{i}.png")
+                #масштабирыванние
+                img = pygame.transform.scale(img,(int(img.get_width() * scale),int(img.get_height()* scale)))
+                temp_list.append(img)
+            self.animation_list.append(temp_list)
+            
         self.image = self.animation_list[self.action][self.frame_index]
         #расположение игрока
         #важное!!!
@@ -71,6 +87,27 @@ class Soldier(pygame.sprite.Sprite):
             dx = self.speed
             self.flip = False
             self.direction = -1
+
+        #прыжок
+            
+        if self.jump == True and self.in_air == False:
+           self.vel_y = -11 
+           self.jump = False
+           self.in_air = True
+        #незабыть про гравитацию
+                    
+        self.vel_y += GRAVITY
+        if self.vel_y > 10:
+            self.vel_y
+        dy += self.vel_y
+
+        #ПРОВЕРЯТЬ СТАЛКНОВЕНИЕ С ПОЛОМ
+        if self.rect.bottom + dy > 300:
+            dy = 300 - self.rect.bottom
+            self.in_air = False
+    
+
+        
         #обновлять позицию
         self.rect.x += dx
         self.rect.y += dy
@@ -116,11 +153,17 @@ while run:
     #player2.draw()
     player.update_animation()
     enemy.draw()
-
-    if moving_left or moving_right:
-        player.update_action(1)# 1 озночает активацию бега
+    if player.alive:
+        if player.in_air :
+            player.update_action(2)# 2 озночает активацию прыжка
+        elif moving_left or moving_right:
+            player.update_action(1)# 1 озночает активацию бега
+            #player2.update_action(1)
+        else:
+            player.update_action(0)# 0 озночает активацию стояние
+            # player2.update_action(1)
     else:
-        player.update_action(0)# 0 озночает активацию стояние
+        pass
     player.move(moving_left, moving_right)
     #player2.move(moving_left, moving_right)
     
@@ -136,6 +179,8 @@ while run:
                 moving_left = True 
             if event.key == pygame.K_d:
                 moving_right = True
+            if event.key == pygame.K_w and player.alive:
+                player.jump = True
             if event.key == pygame.K_ESCAPE:
                 run = False
             
