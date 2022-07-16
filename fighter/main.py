@@ -11,7 +11,10 @@ pygame.display.set_caption("Уличный Бой: I")
 #эта для мака
 #bg_image = pygame.image.load(rf"/Users/Filip/Desktop/Programma/python/gamedev/fighter/assets/images/background/background.jpg").convert_alpha()
 #Windows
-bg_image = pygame.image.load(rf"B:\promma\python\game\fighter\assets\images\background\background.jpg").convert_alpha()
+#p = int(input("chose"))
+#bg_image = pygame.image.load(rf"B:\promma\python\game\fighter\assets\images\background\background_{p}.jpg").convert_alpha()
+bg_image = pygame.image.load(rf"B:\promma\python\game\fighter\assets\images\background\background_2.gif").convert_alpha()
+#print(p)
 #загружать spritesheets
 warrior_sheet = pygame.image.load(rf"B:\promma\python\game\fighter\assets\images\warrior\Sprites\warrior.png").convert_alpha()
 wizard_sheet = pygame.image.load(rf"B:\promma\python\game\fighter\assets\images\wizard\Sprites\wizard.png").convert_alpha()
@@ -70,6 +73,11 @@ while run:
     #двигоем бойцев
    
     fighter_1.move(SCREEN_WIDHT,SCREEN_HAIGHT,screen,fighter_2)
+    #fighter_2.move(610,600,screen,fighter_1)
+
+    #обновлять бойцев
+    fighter_1.update()
+    fighter_2.update()
     
 
     #рисум бойцев

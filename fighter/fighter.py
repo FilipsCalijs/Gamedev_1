@@ -11,11 +11,16 @@ class Fighter():
         self.action = 0#0 - стоояние,1 - бег, 2 - прыжок, 3 - атака 4 - атака2 5 - удар 6 - смерть
         self.frame_index = 0
         self.image = self.animation_list[self.action][self.frame_index]
+        self.update_time =pygame.time.get_ticks()
         self.rect = pygame.Rect((x,y,80,180))
         self.vel_y = 0
+        self.running = False
         self.jump = False
         self.attacking = False
         self.attack_type = 0
+        self.attack_cooldown = 0
+        self.hit = False
+        self.alive = True
         self.health = 100
 
 
@@ -33,13 +38,14 @@ class Fighter():
         return animation_list
 
     def move(self,screen_width,screen_height,surface,target):
-        SPEED = 10
-
         
         #это мои дельта-переменные, то есть это изменяемые переменные
+        SPEED = 10
         GRAVITY = 1
         dx = 0
         dy = 0
+        self.running = False
+        self.attack_type = 0
         #получить ключить
         key = pygame.key.get_pressed()
         #если ты нажмешь чтото на клавиатуре, это зарегистрирует его в этой переменной
@@ -49,9 +55,10 @@ class Fighter():
             #движение
                 if key[pygame.K_a]:
                     dx = - SPEED
-
+                    self.running = True
                 if key[pygame.K_d]:
                     dx = SPEED
+                    self.running = True
             #Прыжок - если хочешь оставить двойные прыжки см здесь:remove "and self.jump == False"
                 if key[pygame.K_w] and self.jump == False:
                     self.vel_y = -20
@@ -86,11 +93,62 @@ class Fighter():
             self.flip = False
         else:
             self.flip = True
+
+
+        if self.attack_cooldown > 0:
+            self.attack_cooldown -= 1
+            
         
 
 
         self.rect.x += dx
         self.rect.y += dy
+
+
+    #обробатывать обновления анимации
+    def update(self):
+        #роверет какое действие игрок выполняет
+        if self.health <= 0:
+            self.health = 0
+            self.alive = False
+            self.update_action(6)
+        elif self.hit == True:
+            self.update_action(5)
+        elif self.attacking == True:
+            if self.attack_type == 1:
+                self.update_action(3)#4 - сильная атака
+            elif self.attack_type == 2:
+                self.update_action(4)#3 - слабая атака
+        elif self.jump == True:
+            self.update_action(2)#2 - прыгать
+        elif self.running == True: 
+            self.update_action(1)#1 - бегать 
+        else:
+            self.update_action(0)#0 - idle
+
+        
+        animation_cooldown = 50
+        #обновлять изоброжение картинки
+        self.image = self.animation_list[self.action][self.frame_index]
+        #проверять если достаточно времени было пройдено с последнего упдейта
+        if pygame.time.get_ticks() -  self.update_time > animation_cooldown:
+            self.frame_index += 1
+            self.update_time = pygame.time.get_ticks()
+        #проверять если онимация закончилась
+        if self.frame_index >= len(self.animation_list[self.action]):
+
+            if self.alive == False:
+                self.frame_index = len(self.animation_list[self.action]) - 1
+            else:
+                self.frame_index = 0
+            #проверять если атака была проведина
+                if self.action == 3 or self.action == 4:
+                    self.attacking = False
+                    self.attack_cooldown = 20
+                if self.action == 5:
+                    self.hit = False
+                    self.attacking = False
+                    self.attack_cooldown = 20
 
     #Значит как будет работать атака
     #так как оба эти бойцы будут исп. рукопашное оружие,я буду проверять,
@@ -98,12 +156,24 @@ class Fighter():
     #   я слздам атакущий Прямоугольник, который будет проверять столкновениес с врагом
 
     def attack(self,surface,target):
-        self.attacking = True
-        attacking_rect = pygame.Rect(self.rect.centerx - (2 * self.rect.width * self.flip),self.rect.y,2 * self.rect.width,self.rect.height)
+        if self.attack_cooldown == 0:
+            self.attacking = True
+            attacking_rect = pygame.Rect(self.rect.centerx - (2 * self.rect.width * self.flip),self.rect.y,2 * self.rect.width,self.rect.height)
+            
+            if attacking_rect.colliderect(target.rect):
+                target.health -= 10
+                target.hit = True
+            #pygame.draw.rect(surface,(0,255,0),attacking_rect)
+            
+
+    def update_action(self,new_action):
+        #оверять если новая действие отличаеться от предыдущего
+        if new_action != self.action:
+            self.action = new_action
+            #обновлять настройки анимацию
+            self.frame_index = 0
+            self.update_time = pygame.time.get_ticks()
         
-        if attacking_rect.colliderect(target.rect):
-            target.health -= 10
-        pygame.draw.rect(surface,(0,255,0),attacking_rect)
     def draw(self,surface):
         img = pygame.transform.flip(self.image, self.flip,False)
         #рисуем красные квадраты
