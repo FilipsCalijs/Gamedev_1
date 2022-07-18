@@ -2,7 +2,8 @@ import pygame
 
 class Fighter():
     
-    def __init__(self,x,y,data,sprite_sheet,animation_steps):
+    def __init__(self,player,x,y,data,sprite_sheet,animation_steps):
+        self.player = player
         self.size = data[0]
         self.image_scale = data[1]
         self.offset = data[2]
@@ -37,7 +38,7 @@ class Fighter():
         
         return animation_list
 
-    def move(self,screen_width,screen_height,surface,target):
+    def move(self,screen_width,screen_height,surface,target,round_over):
         
         #это мои дельта-переменные, то есть это изменяемые переменные
         SPEED = 10
@@ -51,26 +52,49 @@ class Fighter():
         #если ты нажмешь чтото на клавиатуре, это зарегистрирует его в этой переменной
 
         #может делать действия в том случае,если в дастоящее время атакует 
-        if self.attacking == False:
-            #движение
-                if key[pygame.K_a]:
-                    dx = - SPEED
-                    self.running = True
-                if key[pygame.K_d]:
-                    dx = SPEED
-                    self.running = True
-            #Прыжок - если хочешь оставить двойные прыжки см здесь:remove "and self.jump == False"
-                if key[pygame.K_w] and self.jump == False:
-                    self.vel_y = -20
-                    self.jump = True
-            #Атака
-                if key[pygame.K_r] or key[pygame.K_t]:
-                    self.attack(surface,target)
-                #определить,какой тип атаки был использован
-                    if key[pygame.K_r]:
-                        self.attack_type = 1
-                    if key[pygame.K_t]:
-                        self.attack_type = 2
+        if self.attacking == False and self.alive == True and round_over == False:
+            if self.player == 1: 
+                #движение
+                    if key[pygame.K_a]:
+                        dx = - SPEED
+                        self.running = True
+                    if key[pygame.K_d]:
+                        dx = SPEED
+                        self.running = True
+                #Прыжок - если хочешь оставить двойные прыжки см здесь:remove "and self.jump == False"
+                    if key[pygame.K_w] and self.jump == False:
+                        self.vel_y = -20
+                        self.jump = True
+                #Атака
+                    if key[pygame.K_r] or key[pygame.K_t]:
+                        self.attack(target)
+                    #определить,какой тип атаки был использован
+                        if key[pygame.K_r]:
+                            self.attack_type = 1
+                        if key[pygame.K_t]:
+                            self.attack_type = 2
+            if self.player == 2: 
+                #движение
+                    if key[pygame.K_j]:
+                        dx = - SPEED
+                        self.running = True
+                    if key[pygame.K_l]:
+                        dx = SPEED
+                        self.running = True
+                #Прыжок - если хочешь оставить двойные прыжки см здесь:remove "and self.jump == False"
+                    if key[pygame.K_i] and self.jump == False:
+                        self.vel_y = -20
+                        self.jump = True
+                #Атака
+                    if key[pygame.K_u] or key[pygame.K_y]:
+                        self.attack(target)
+                    #определить,какой тип атаки был использован
+                        if key[pygame.K_u]:
+                            self.attack_type = 1
+                        if key[pygame.K_y]:
+                            self.attack_type = 2
+
+
 
 
         self.vel_y += GRAVITY
@@ -155,7 +179,7 @@ class Fighter():
     #достаточно ли длизок противник в пределах достигаймости, чтоб это сделать я
     #   я слздам атакущий Прямоугольник, который будет проверять столкновениес с врагом
 
-    def attack(self,surface,target):
+    def attack(self,target):
         if self.attack_cooldown == 0:
             self.attacking = True
             attacking_rect = pygame.Rect(self.rect.centerx - (2 * self.rect.width * self.flip),self.rect.y,2 * self.rect.width,self.rect.height)
@@ -177,6 +201,6 @@ class Fighter():
     def draw(self,surface):
         img = pygame.transform.flip(self.image, self.flip,False)
         #рисуем красные квадраты
-        pygame.draw.rect(surface,(255,0,0),self.rect)
-        surface.blit(img,(self.rect.x - (self.offset[0] * self.image_scale),self.rect.y - (self.offset[1] * self.image_scale)))
+      
+        surface.blit(img,(self.rect.x - (self.offset[0] * self.image_scale),self.rect.y - (self.offset[1] * self.image_scale)+20))#вод здесь меняеться параметр высоты положения игрока
 print("all work corectly, change your py file to the main")
