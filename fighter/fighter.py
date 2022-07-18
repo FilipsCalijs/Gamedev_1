@@ -2,7 +2,7 @@ import pygame
 
 class Fighter():
     
-    def __init__(self,player,x,y,data,sprite_sheet,animation_steps):
+    def __init__(self,player,x,y,data,sprite_sheet,animation_steps,sound,sound_2):
         self.player = player
         self.size = data[0]
         self.image_scale = data[1]
@@ -20,6 +20,8 @@ class Fighter():
         self.attacking = False
         self.attack_type = 0
         self.attack_cooldown = 0
+        self.attack_sound = sound
+        self.attack_sound_2 = sound_2
         self.hit = False
         self.alive = True
         self.health = 100
@@ -141,8 +143,11 @@ class Fighter():
         elif self.attacking == True:
             if self.attack_type == 1:
                 self.update_action(3)#4 - сильная атака
+                self.attack_sound.play()
             elif self.attack_type == 2:
                 self.update_action(4)#3 - слабая атака
+                self.attack_sound_2.play()
+                
         elif self.jump == True:
             self.update_action(2)#2 - прыгать
         elif self.running == True: 
@@ -202,5 +207,5 @@ class Fighter():
         img = pygame.transform.flip(self.image, self.flip,False)
         #рисуем красные квадраты
       
-        surface.blit(img,(self.rect.x - (self.offset[0] * self.image_scale),self.rect.y - (self.offset[1] * self.image_scale)+20))#вод здесь меняеться параметр высоты положения игрока
+        surface.blit(img,(self.rect.x - (self.offset[0] * self.image_scale),self.rect.y - (self.offset[1] * self.image_scale)+50))#вод здесь меняеться параметр высоты положения игрока
 print("all work corectly, change your py file to the main")

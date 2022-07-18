@@ -1,19 +1,39 @@
 import pygame
 from fighter import Fighter
+from pygame import mixer
 
+
+mixer.init()
 pygame.init()
 SCREEN_WIDHT = 1000
 SCREEN_HAIGHT = 600
 
 screen = pygame.display.set_mode((SCREEN_WIDHT,SCREEN_HAIGHT))
 pygame.display.set_caption("Уличный Бой: I")
+#музыка и звуки
+pygame.mixer.music.load("assets/audio/IOatack.mp3")
+pygame.mixer.music.set_volume(0.7)
+#pygame.mixer.music.play(-1,3.0,5000)
+#первая значения это повтор -1 это бесконечность
+
+warrior_fx = pygame.mixer.Sound(rf"B:\promma\python\game\fighter\assets\audio\sword.wav")
+warrior_fx.set_volume(0.4)
+warrior_fx_2 = pygame.mixer.Sound(rf"B:\promma\python\game\fighter\assets\audio\warror_2.wav")
+warrior_fx_2.set_volume(0.4)
+
+wizard_fx = pygame.mixer.Sound(rf"B:\promma\python\game\fighter\assets\audio\wizzard.wav")
+wizard_fx.set_volume(0.4)
+wizard_fx_2 = pygame.mixer.Sound(rf"B:\promma\python\game\fighter\assets\audio\wizzard_2.wav")
+wizard_fx_2.set_volume(0.4)
+
+
 #картинка для заднего фона
 #эта для мака
 #bg_image = pygame.image.load(rf"/Users/Filip/Desktop/Programma/python/gamedev/fighter/assets/images/background/background.jpg").convert_alpha()
 #Windows
 #p = int(input("chose"))
 #bg_image = pygame.image.load(rf"B:\promma\python\game\fighter\assets\images\background\background_{p}.jpg").convert_alpha()
-bg_image = pygame.image.load(rf"B:\promma\python\game\fighter\assets\images\background\background_2.gif").convert_alpha()
+bg_image = pygame.image.load(rf"B:\promma\python\game\fighter\assets\images\background\background_25.jpg").convert_alpha()
 #print(p)
 #загружать spritesheets
 warrior_sheet = pygame.image.load(rf"B:\promma\python\game\fighter\assets\images\warrior\Sprites\warrior.png").convert_alpha()
@@ -76,8 +96,8 @@ def draw_health_bar(health,x,y):
     pygame.draw.rect(screen,RED,(x,y,400,30))
     pygame.draw.rect(screen,GREEN,(x,y,400 * ratio,30))
 
-fighter_1 = Fighter(1,200,310,WARRIOR_DATA,warrior_sheet,WARRIOR_ANIMATION_STEPS,)
-fighter_2 = Fighter(2,700,310,WIZARD_DATA, wizard_sheet,WIZARD_ANIMATION_STEPS)
+fighter_1 = Fighter(1,200,310,WARRIOR_DATA,warrior_sheet,WARRIOR_ANIMATION_STEPS,warrior_fx,warrior_fx_2)
+fighter_2 = Fighter(2,700,310,WIZARD_DATA, wizard_sheet,WIZARD_ANIMATION_STEPS,wizard_fx,wizard_fx_2)
 run = True
 while run:
 
@@ -164,8 +184,8 @@ while run:
         if pygame.time.get_ticks() - round_over_time > ROUND_OVER_COOLDOWN:
             round_over = False
             intro_count = 4
-            fighter_1 = Fighter(1,200,310,WARRIOR_DATA,warrior_sheet,WARRIOR_ANIMATION_STEPS)
-            fighter_2 = Fighter(2,700,310,WIZARD_DATA, wizard_sheet,WIZARD_ANIMATION_STEPS)
+            fighter_1 = Fighter(1,200,310,WARRIOR_DATA,warrior_sheet,WARRIOR_ANIMATION_STEPS,warrior_fx,warrior_fx_2)
+            fighter_2 = Fighter(2,700,310,WIZARD_DATA, wizard_sheet,WIZARD_ANIMATION_STEPS,wizard_fx,wizard_fx_2)
 
 
         
